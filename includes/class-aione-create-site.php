@@ -1,0 +1,381 @@
+<?php
+
+/**
+ * The file that defines the core plugin class
+ *
+ * A class definition that includes attributes and functions used across both the
+ * public-facing side of the site and the admin area.
+ *
+ * @link       http://sgssandhu.com/
+ * @since      1.0.0
+ *
+ * @package    Aione_Create_Site
+ * @subpackage Aione_Create_Site/includes
+ */
+
+/**
+ * The core plugin class.
+ *
+ * This is used to define internationalization, admin-specific hooks, and
+ * public-facing site hooks.
+ *
+ * Also maintains the unique identifier of this plugin as well as the current
+ * version of the plugin.
+ *
+ * @since      1.0.0
+ * @package    Aione_Create_Site
+ * @subpackage Aione_Create_Site/includes
+ * @author     SGS Sandhu <sgs.sandhu@gmail.com>
+ */
+class Aione_Create_Site {
+
+	/**
+	 * The loader that's responsible for maintaining and registering all hooks that power
+	 * the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 * @var      Aione_Create_Site_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 */
+	protected $loader;
+
+	/**
+	 * The unique identifier of this plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 * @var      string    $plugin_name    The string used to uniquely identify this plugin.
+	 */
+	protected $plugin_name;
+
+	/**
+	 * The current version of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 * @var      string    $version    The current version of the plugin.
+	 */
+	protected $version;
+
+	/**
+	 * Define the core functionality of the plugin.
+	 *
+	 * Set the plugin name and the plugin version that can be used throughout the plugin.
+	 * Load the dependencies, define the locale, and set the hooks for the admin area and
+	 * the public-facing side of the site.
+	 *
+	 * @since    1.0.0
+	 */
+	public function __construct() {
+
+		$this->plugin_name = 'aione-create-site';
+		$this->version = '1.0.0';
+
+		$this->load_dependencies();
+		$this->set_locale();
+		$this->define_admin_hooks();
+		$this->define_public_hooks();
+		
+		add_shortcode( 'aione-create-site', array($this, 'aione_create_site_shortcode') );
+		
+		/* if(!class_exists('ReallySimpleCaptcha')){
+			require_once ABSPATH . '/wp-content/plugins/aione-app-builder/library/really-simple-captcha/really-simple-captcha.php';
+		} */
+
+	}
+
+	/**
+	 * Load the required dependencies for this plugin.
+	 *
+	 * Include the following files that make up the plugin:
+	 *
+	 * - Aione_Create_Site_Loader. Orchestrates the hooks of the plugin.
+	 * - Aione_Create_Site_i18n. Defines internationalization functionality.
+	 * - Aione_Create_Site_Admin. Defines all hooks for the admin area.
+	 * - Aione_Create_Site_Public. Defines all hooks for the public side of the site.
+	 *
+	 * Create an instance of the loader which will be used to register the hooks
+	 * with WordPress.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function load_dependencies() {
+
+		/**
+		 * The class responsible for orchestrating the actions and filters of the
+		 * core plugin.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-aione-create-site-loader.php';
+
+		/**
+		 * The class responsible for defining internationalization functionality
+		 * of the plugin.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-aione-create-site-i18n.php';
+
+		/**
+		 * The class responsible for defining all actions that occur in the admin area.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-aione-create-site-admin.php';
+
+		/**
+		 * The class responsible for defining all actions that occur in the public-facing
+		 * side of the site.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-aione-create-site-public.php';
+
+		$this->loader = new Aione_Create_Site_Loader();
+
+	}
+
+	/**
+	 * Define the locale for this plugin for internationalization.
+	 *
+	 * Uses the Aione_Create_Site_i18n class in order to set the domain and to register the hook
+	 * with WordPress.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function set_locale() {
+
+		$plugin_i18n = new Aione_Create_Site_i18n();
+
+		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
+
+	}
+
+	/**
+	 * Register all of the hooks related to the admin area functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function define_admin_hooks() {
+
+		$plugin_admin = new Aione_Create_Site_Admin( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+
+	}
+
+	/**
+	 * Register all of the hooks related to the public-facing functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function define_public_hooks() {
+
+		$plugin_public = new Aione_Create_Site_Public( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+
+	}
+
+	/**
+	 * Run the loader to execute all of the hooks with WordPress.
+	 *
+	 * @since    1.0.0
+	 */
+	public function run() {
+		$this->loader->run();
+	}
+
+	/**
+	 * The name of the plugin used to uniquely identify it within the context of
+	 * WordPress and to define internationalization functionality.
+	 *
+	 * @since     1.0.0
+	 * @return    string    The name of the plugin.
+	 */
+	public function get_plugin_name() {
+		return $this->plugin_name;
+	}
+
+	/**
+	 * The reference to the class that orchestrates the hooks with the plugin.
+	 *
+	 * @since     1.0.0
+	 * @return    Aione_Create_Site_Loader    Orchestrates the hooks of the plugin.
+	 */
+	public function get_loader() {
+		return $this->loader;
+	}
+
+	/**
+	 * Retrieve the version number of the plugin.
+	 *
+	 * @since     1.0.0
+	 * @return    string    The version number of the plugin.
+	 */
+	public function get_version() {
+		return $this->version;
+	}
+	
+	public function clean_input($string){
+		$string=implode("",explode("\\",$string));
+		return htmlentities(trim(strip_tags(stripslashes($string))), ENT_NOQUOTES, "UTF-8");
+	}
+	
+	public function aione_create_site_shortcode (){
+		$signup_url = home_url();
+		if ( !is_user_logged_in() ) {
+			header("Location: $signup_url/wp-login.php");
+			exit;
+		}
+		$output = "";
+		
+		if (class_exists('ReallySimpleCaptcha'))  {
+			
+			$captcha_instance = new ReallySimpleCaptcha();
+			$captcha_instance->cleanup($minutes = 30);
+				
+			$captcha_instance->chars = '2345678abcdefghijklmnpqrstuvwxyz2345678ABCDEFGHJKLMNPQRSTUVWXYZ23456789';	
+			$captcha_instance->bg = array( 255, 255, 255 );
+			$captcha_instance->fg = array( 21, 141, 197 );
+			$captcha_instance->img_size = array( 205, 40 );
+			$captcha_instance->base = array( 20, 30 );
+			$captcha_instance->font_size = 22;
+			$captcha_instance->char_length = 6;
+			$captcha_instance->font_char_width = 28;
+			$upload_dir = wp_upload_dir();
+			$captcha_instance->tmp_dir = $upload_dir['basedir'].'/captcha/';
+			$captcha_instance->fonts = array(
+				$captcha_instance->tmp_dir . '/fonts/Courgette-Regular.ttf',
+				//$captcha_instance->tmp_dir . '/fonts/GenBkBasI.ttf',
+				//$captcha_instance->tmp_dir . '/fonts/GenBkBasBI.ttf',
+				$captcha_instance->tmp_dir . '/fonts/Courgette-Regular.ttf' 
+				);
+		}
+			
+		if( isset($_POST['action']) && $_POST['action'] == 'create_site' ){
+		
+		$errors = array();
+		
+		if(strlen($_POST['create_website_form_site_url']) < 4){
+			array_push($errors, array('element_id' => 'create_website_form_site_url', 'error' => 'Website URL must have at least 4 characters.'));
+		}
+		
+		$captcha_value= $_POST['captcha_value'];
+		$prefix = $_POST['captcha_prefix'];
+		$is_captcha_correct = $captcha_instance->check( $prefix, $captcha_value);
+		
+		if(!$is_captcha_correct){
+			array_push($errors, array('element_id' => 'create_website_form_captcha_value', 'error' => 'Wrong captcha value'));
+		}
+		
+		$website_url = $this->clean_input($_POST['create_website_form_site_url']);
+		
+		if(SUBDOMAIN_INSTALL == 'true'){
+			$domain = $website_url.'.'.DOMAIN_CURRENT_SITE;
+			$path = PATH_CURRENT_SITE;
+		} else {
+			$domain = DOMAIN_CURRENT_SITE;
+			$path = PATH_CURRENT_SITE.$website_url.'/';
+		}
+		//$domain = $website_url.'.darlic.com';
+		//$path = '/'; 
+		$title = $this->clean_input($_POST['create_website_form_site_title']);	
+		
+		if (function_exists('domain_exists')) {
+			 if(domain_exists($domain, $path)){ 
+				array_push($errors, array('element_id' => 'create_website_form_site_title', 'error' => 'the Website URL you requested is already Taken. Please Try another URL.'));
+			 }
+		}
+		
+		/* echo "<pre>";
+		print_r($errors);
+		echo "</pre>";  */
+		if(empty($errors)){
+		
+			$blog_template = $_POST['blog_template'];
+			$current_user = wp_get_current_user();
+			$user_id = $current_user->ID;
+			$site_id= 1;
+			$meta = array(
+				'blog_template' => $blog_template
+			);
+			
+			$site_created = wpmu_create_blog($domain, $path, $title, $user_id, $meta, $site_id);
+			
+			if($site_created){
+				$site_details = get_blog_details($site_created);
+				$output .=  '<h2 class="success aligncenter">Your Website Created Successfully.</h2>';
+				$output .=   '<h2 class="aligncenter">Website Name : '.$site_details->blogname.'</h2>';
+				
+				$output .=   '<a class="create_site_button create_website_form_submit left" href="'.$site_details->siteurl.'">View Website</a>';
+				$output .=   '<a class="create_site_button create_website_form_submit right" href="'.$site_details->siteurl.'/wp-admin/">Admin Panel</a>';
+				$output .=   '<div class="aione-clearfix margin-bottom15"></div>';
+				
+				$output .=   '<a class="create_site_button create_website_form_submit left" href="'.home_url().'/account/">My Account</a>';
+				$output .=   '<a class="create_site_button create_website_form_submit right" href="'.home_url().'/u/'.$current_user->user_nicename.'/">My Profile</a>';
+				$output .=   '<div class="aione-clearfix margin-bottom15"></div>';
+				
+				$output .=   '<h2 class="aligncenter">Create another website</h2>';
+
+			} else {
+				$output .=   '<ul class="errors">';
+				$output .=   '<li class="error">Some error occurred while creating your website. Please contact support team.</li>';
+				$output .=   '</ul>';
+			}
+		} else {
+			$output .=   '<ul class="errors">';
+			foreach ($errors as $error) {
+				$output .=   '<li class="error">';
+				$output .=   $error['error'];
+				$output .=   '</li>';
+			}
+			$output .=   '</ul>';
+		}
+		$captcha_instance->remove($prefix);
+	}
+		
+		
+		$output .= '<form method="post" id="create_website_form" class="create_site_form aione-contact-form" action="">
+			<ul>
+			<li style="margin-top:-40px;">
+				<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">.darlic.com</label>
+				<label class="create_website_form_label" for="create_website_form_site_url">Website URL<span class="gfield_required">*</span></label>
+				<input name="create_website_form_site_url" id="create_website_form_site_url" placeholder="yourwebsite" type="text" value="'.$website_url.'" class="create_website_form_input large" tabindex="51">
+			</li>
+			<li>
+				<label class="create_website_form_label" for="create_website_form_site_title">Website Title<span class="gfield_required">*</span></label>
+				<input name="create_website_form_site_title" id="create_website_form_site_title" type="text" placeholder="Your Website Title" value="'.$title.'" class="create_website_form_input large" tabindex="52">
+			</li>';
+			
+			
+		$word = $captcha_instance->generate_random_word();
+		$prefix = mt_rand();
+		$image_name = $captcha_instance->generate_image( $prefix, $word );
+		$captcha_image_url =  $upload_dir['baseurl'].'/captcha/'.$image_name;
+		$blog_template = intval($_GET['blog_template']);
+			
+		$output .= '<li>
+				<label class="create_website_form_label" for="create_website_form_captcha_value">Captcha<span class="gfield_required">*</span></label>
+				<div class="create_website_form_captcha_image">
+				<img src="'.$captcha_image_url.'" />
+				</div> 
+				<input name="captcha_value" id="create_website_form_captcha_value" type="text" placeholder="Enter Captcha Here" value="" class="create_website_form_input large" tabindex="53">
+				<input name="captcha_prefix" type="hidden" value="'.$prefix.'" >
+				<input name="action" type="hidden" value="create_site" >
+				<input name="blog_template" type="hidden" value="'.$blog_template.'" >
+				<div class="aione-clearfix"></div> 
+			</li>
+			<li>
+				<input type="submit" id="create_website_form_submit" class="create_website_form_submit aione-button button-large button-round button-flat" value="Create Site" tabindex="54" onclick="">
+			</li>
+			</ul>
+		</form>';
+	
+		
+		
+		return $output;
+	}
+
+}
