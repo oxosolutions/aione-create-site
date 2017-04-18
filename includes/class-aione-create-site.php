@@ -342,7 +342,12 @@ class Aione_Create_Site {
 		$output .= '<form method="post" id="create_website_form" class="create_site_form aione-contact-form" action="">
 			<ul>
 			<li style="margin-top:-40px;">
-				<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">.darlic.com</label>
+				';
+		if(SUBDOMAIN_INSTALL == 'true'){
+			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">.'.DOMAIN_CURRENT_SITE.'</label>';
+		} else {
+			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">'.DOMAIN_CURRENT_SITE.'</label>';
+		}
 				<label class="create_website_form_label" for="create_website_form_site_url">Website URL<span class="gfield_required">*</span></label>
 				<input name="create_website_form_site_url" id="create_website_form_site_url" placeholder="yourwebsite" type="text" value="'.$website_url.'" class="create_website_form_input large" tabindex="51">
 			</li>
