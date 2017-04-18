@@ -246,12 +246,14 @@ class Aione_Create_Site {
 			$captcha_instance->font_char_width = 28;
 			$upload_dir = wp_upload_dir();
 			$captcha_instance->tmp_dir = $upload_dir['basedir'].'/captcha/';
+			/*
 			$captcha_instance->fonts = array(
 				$captcha_instance->tmp_dir . '/fonts/Courgette-Regular.ttf',
 				//$captcha_instance->tmp_dir . '/fonts/GenBkBasI.ttf',
 				//$captcha_instance->tmp_dir . '/fonts/GenBkBasBI.ttf',
 				$captcha_instance->tmp_dir . '/fonts/Courgette-Regular.ttf' 
-				);
+			);
+			*/
 		}
 			
 		if( isset($_POST['action']) && $_POST['action'] == 'create_site' ){
