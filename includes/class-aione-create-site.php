@@ -348,6 +348,7 @@ class Aione_Create_Site {
 		} else {
 			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">'.DOMAIN_CURRENT_SITE.'</label>';
 		}
+		$output .= '
 				<label class="create_website_form_label" for="create_website_form_site_url">Website URL<span class="gfield_required">*</span></label>
 				<input name="create_website_form_site_url" id="create_website_form_site_url" placeholder="yourwebsite" type="text" value="'.$website_url.'" class="create_website_form_input large" tabindex="51">
 			</li>
