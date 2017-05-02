@@ -267,12 +267,14 @@ class Aione_Create_Site {
 				array_push($errors, array('element_id' => 'create_website_form_site_url', 'error' => 'Website URL must have at least 4 characters.'));
 			}
 			
-			$captcha_value= $_POST['captcha_value'];
-			$prefix = $_POST['captcha_prefix'];
-			$is_captcha_correct = $captcha_instance->check( $prefix, $captcha_value);
-			
-			if(!$is_captcha_correct){
-				array_push($errors, array('element_id' => 'create_website_form_captcha_value', 'error' => 'Wrong captcha value'));
+			if (class_exists('ReallySimpleCaptcha'))  {
+				$captcha_value= $_POST['captcha_value'];
+				$prefix = $_POST['captcha_prefix'];
+				$is_captcha_correct = $captcha_instance->check( $prefix, $captcha_value);
+				
+				if(!$is_captcha_correct){
+					array_push($errors, array('element_id' => 'create_website_form_captcha_value', 'error' => 'Wrong captcha value'));
+				}
 			}
 			
 			$website_url = $this->clean_input($_POST['create_website_form_site_url']);
@@ -308,7 +310,10 @@ class Aione_Create_Site {
 					'blog_template' => $blog_template
 				);
 				
-				$site_created = wpmu_create_blog($domain, $path, $title, $user_id, $meta, $site_id);
+				//echo " === ".$blog_template;
+				
+				$site_created = wpmu_create_blog($domain, $path, $title, $user_id, $meta, $site_id); 
+
 				
 				if($site_created){
 					$site_details = get_blog_details($site_created);
@@ -366,23 +371,25 @@ class Aione_Create_Site {
 			</li>
 			';
 			
+		if (class_exists('ReallySimpleCaptcha'))  {	
+			$word = $captcha_instance->generate_random_word();
+			$prefix = mt_rand();
+			$image_name = $captcha_instance->generate_image( $prefix, $word );
+			$captcha_image_url =  $upload_dir['baseurl'].'/captcha/'.$image_name;
+			$blog_template = intval($_GET['template']);
+				
+			$output .= '<li>
+					<label class="create_website_form_label" for="create_website_form_captcha_value">Captcha<span class="gfield_required">*</span></label>
+					<div class="create_website_form_captcha_image">
+					<img src="'.$captcha_image_url.'" />
+					</div> 
+					<input name="captcha_value" id="create_website_form_captcha_value" type="text" placeholder="Enter Captcha Here" value="" class="create_website_form_input large" tabindex="53">
+					<input name="captcha_prefix" type="hidden" value="'.$prefix.'" >
+					<div class="aione-clearfix"></div> 
+				</li>
+				';
+		}
 			
-		$word = $captcha_instance->generate_random_word();
-		$prefix = mt_rand();
-		$image_name = $captcha_instance->generate_image( $prefix, $word );
-		$captcha_image_url =  $upload_dir['baseurl'].'/captcha/'.$image_name;
-		$blog_template = intval($_GET['template']);
-			
-		$output .= '<li>
-				<label class="create_website_form_label" for="create_website_form_captcha_value">Captcha<span class="gfield_required">*</span></label>
-				<div class="create_website_form_captcha_image">
-				<img src="'.$captcha_image_url.'" />
-				</div> 
-				<input name="captcha_value" id="create_website_form_captcha_value" type="text" placeholder="Enter Captcha Here" value="" class="create_website_form_input large" tabindex="53">
-				<input name="captcha_prefix" type="hidden" value="'.$prefix.'" >
-				<div class="aione-clearfix"></div> 
-			</li>
-			';
 			if( $blog_template <= 0 ){
 				$output .= '<li>
 				<label class="create_website_form_label" for="create_website_form_select_template">Select Template</label>
