@@ -77,12 +77,9 @@ class Aione_Create_Site {
 		$this->define_public_hooks();
 		
 		add_shortcode( 'aione-create-site', array($this, 'aione_create_site_shortcode') );
+		add_shortcode( 'aione-create-sitev2', array($this, 'aione_create_sitev2_shortcode') );
 		
 		add_shortcode( 'aione-blog-templates', array($this, 'aione_blog_templates_shortcode') ); 
-		
-		/* if(!class_exists('ReallySimpleCaptcha')){
-			require_once ABSPATH . '/wp-content/plugins/aione-app-builder/library/really-simple-captcha/really-simple-captcha.php';
-		} */
 
 	}
 
@@ -126,6 +123,12 @@ class Aione_Create_Site {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-aione-create-site-public.php';
+
+		/**
+		 * The class responsible for creating CAPTCHA
+		 * 
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'really-simple-captcha.php';
 
 		$this->loader = new Aione_Create_Site_Loader();
 
@@ -227,19 +230,19 @@ class Aione_Create_Site {
 	
 	
 	public function aione_create_site_shortcode (){
-		$signup_url = home_url();
+		$signup_url = home_url(); 
 		if ( !is_user_logged_in() ) {
 			header("Location: $signup_url/wp-login.php");
 			exit;
 		}
 		$output = "";
 		
-		if (class_exists('ReallySimpleCaptcha'))  {
+		if (class_exists('Captcha'))  {
 			
-			$captcha_instance = new ReallySimpleCaptcha();
+			$captcha_instance = new Captcha();
 			$captcha_instance->cleanup($minutes = 30);
 				
-			$captcha_instance->chars = '2345678abcdefghijklmnpqrstuvwxyz2345678ABCDEFGHJKLMNPQRSTUVWXYZ23456789';	
+			$captcha_instance->chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';	
 			$captcha_instance->bg = array( 255, 255, 255 );
 			$captcha_instance->fg = array( 21, 141, 197 );
 			$captcha_instance->img_size = array( 205, 40 );
@@ -249,14 +252,7 @@ class Aione_Create_Site {
 			$captcha_instance->font_char_width = 28;
 			$upload_dir = wp_upload_dir();
 			$captcha_instance->tmp_dir = $upload_dir['basedir'].'/captcha/';
-			/*
-			$captcha_instance->fonts = array(
-				$captcha_instance->tmp_dir . '/fonts/Courgette-Regular.ttf',
-				//$captcha_instance->tmp_dir . '/fonts/GenBkBasI.ttf',
-				//$captcha_instance->tmp_dir . '/fonts/GenBkBasBI.ttf',
-				$captcha_instance->tmp_dir . '/fonts/Courgette-Regular.ttf' 
-			);
-			*/
+			
 		}
 			
 		if( isset($_POST['action']) && $_POST['action'] == 'create_site' ){
@@ -267,7 +263,7 @@ class Aione_Create_Site {
 				array_push($errors, array('element_id' => 'create_website_form_site_url', 'error' => 'Website URL must have at least 4 characters.'));
 			}
 			
-			if (class_exists('ReallySimpleCaptcha'))  {
+			if (class_exists('Captcha'))  {
 				$captcha_value= $_POST['captcha_value'];
 				$prefix = $_POST['captcha_prefix'];
 				$is_captcha_correct = $captcha_instance->check( $prefix, $captcha_value);
@@ -371,7 +367,7 @@ class Aione_Create_Site {
 			</li>
 			';
 			
-		if (class_exists('ReallySimpleCaptcha'))  {	
+		if (class_exists('Captcha'))  {	
 			$word = $captcha_instance->generate_random_word();
 			$prefix = mt_rand();
 			$image_name = $captcha_instance->generate_image( $prefix, $word );
@@ -412,6 +408,198 @@ class Aione_Create_Site {
 				<input type="submit" id="create_website_form_submit" class="create_website_form_submit aione-button button-large button-round button-flat" value="Create Site" tabindex="54" onclick="">
 			</li>
 			</ul>
+		</form>';
+	
+		
+		
+		return $output;
+	}
+
+	public function aione_create_sitev2_shortcode(){
+		$signup_url = home_url();
+		$output = "";
+
+		if (class_exists('Captcha'))  {
+			
+			$captcha_instance = new Captcha();
+			$captcha_instance->cleanup($minutes = 30);
+				
+			$captcha_instance->chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';	
+			$captcha_instance->bg = array( 255, 255, 255 );
+			$captcha_instance->fg = array( 21, 141, 197 );
+			$captcha_instance->img_size = array( 205, 40 );
+			$captcha_instance->base = array( 20, 30 );
+			$captcha_instance->font_size = 22;
+			$captcha_instance->char_length = 6;
+			$captcha_instance->font_char_width = 28;
+			$upload_dir = wp_upload_dir();
+			$captcha_instance->tmp_dir = $upload_dir['basedir'].'/captcha/';
+			
+		}
+
+		if( isset($_POST['action']) && $_POST['action'] == 'create_site' ){ 
+			$errors = array();
+			
+			if(strlen($_POST['create_website_form_site_url']) < 4){
+				array_push($errors, array('element_id' => 'create_website_form_site_url', 'error' => 'Website URL must have at least 4 characters.'));
+			}
+
+			if (class_exists('Captcha'))  {
+				$captcha_value= $_POST['captcha_value'];
+				$prefix = $_POST['captcha_prefix'];
+				$is_captcha_correct = $captcha_instance->check( $prefix, $captcha_value);
+				
+				if(!$is_captcha_correct){
+					array_push($errors, array('element_id' => 'create_website_form_captcha_value', 'error' => 'Wrong captcha value'));
+				}
+			}
+
+			$website_url = $this->clean_input($_POST['create_website_form_site_url']);
+			
+			if(SUBDOMAIN_INSTALL == 'true'){
+				$domain = $website_url.'.'.DOMAIN_CURRENT_SITE;
+				$path = PATH_CURRENT_SITE;
+			} else {
+				$domain = DOMAIN_CURRENT_SITE;
+				$path = PATH_CURRENT_SITE.$website_url.'/';
+			}
+
+			$title = $this->clean_input($_POST['create_website_form_site_title']);
+
+			if (function_exists('domain_exists')) {
+				 if(domain_exists($domain, $path)){ 
+					array_push($errors, array('element_id' => 'create_website_form_site_title', 'error' => 'the Website URL you requested is already Taken. Please Try another URL.'));
+				 }
+			}
+
+			if ( !is_user_logged_in() ) {
+				$user_email = $_POST['create_website_form_site_email'];
+				$user_password = $_POST['create_website_form_site_password'];
+				// this is required for username checks
+				if($user_email == '') {
+					array_push($errors, array('element_id' => 'create_website_form_site_email', 'error' => 'Email address field can not be empty.'));
+				} else {
+					if(!is_email($user_email)) {
+						array_push($errors, array('element_id' => 'create_website_form_site_email', 'error' => 'Email address you have entered is invalid. Enter a valid email address.'));
+					}
+					if(email_exists($user_email)) {
+						array_push($errors, array('element_id' => 'create_website_form_site_email', 'error' => 'Email already registered.'));
+					}
+				}
+				// this is required for password checks
+				if($user_password == '') {
+					array_push($errors, array('element_id' => 'create_website_form_site_password', 'error' => 'Password field can not be empty.'));
+				} else {
+					if(preg_match("/^.*(?=.{8,})(?=.*[0-9]).*$/", $user_password) === 0){
+						array_push($errors, array('element_id' => 'create_website_form_site_password', 'error' => 'Password should have minimum 8 character and one number is compulsary.'));
+						
+					}
+				}
+			}
+
+			if(empty($errors)){
+				$site_id= 1;				
+
+				if ( !is_user_logged_in() ){
+					$user_role = get_option('default_role');
+
+					$new_user_id = wp_insert_user(array(
+							'user_login'		=> $user_email,
+							'user_pass'	 		=> $user_password,
+							'user_email'		=> $user_email,
+							'user_registered'		=> date('Y-m-d H:i:s'),
+							'role'			=> $user_role
+						)
+					);
+					$site_created = wpmu_create_blog($domain, $path, $website_url, $new_user_id, $meta, $site_id); 
+				} else {
+					$current_user = wp_get_current_user();
+					$user_id = $current_user->ID;
+					$site_created = wpmu_create_blog($domain, $path, $website_url, $user_id, $meta, $site_id); 
+				}
+
+				if($site_created){
+					$site_details = get_blog_details($site_created);
+					$output .=  '<h2 class="success aligncenter">Your Website Created Successfully.</h2>';
+					$output .=   '<h2 class="aligncenter">Website Name : '.$site_details->blogname.'</h2>';
+					
+					if(!is_user_logged_in()){
+						$output .=   '<a class="create_site_button create_website_form_submit left" href="'.$site_details->siteurl.'">View Website</a>';
+						$output .=   '<a class="create_site_button create_website_form_submit right" href="'.$site_details->siteurl.'/wp-login.php">Login</a>';
+
+					} else {
+						$output .=   '<a class="create_site_button create_website_form_submit left" href="'.$site_details->siteurl.'">View Website</a>';
+						$output .=   '<a class="create_site_button create_website_form_submit right" href="'.$site_details->siteurl.'/wp-admin/">Admin Panel</a>';
+						$output .=   '<div class="aione-clearfix margin-bottom15"></div>';
+						
+						$output .=   '<a class="create_site_button create_website_form_submit left" href="'.home_url().'/account/">My Account</a>';
+						$output .=   '<a class="create_site_button create_website_form_submit right" href="'.home_url().'/u/'.$current_user->user_nicename.'/">My Profile</a>';
+						$output .=   '<div class="aione-clearfix margin-bottom15"></div>';
+					}
+					$output .=   '<h2 class="aligncenter">Create another website</h2>';
+
+				} else {
+					$output .=   '<ul class="errors">';
+					$output .=   '<li class="error">Some error occurred while creating your website. Please contact support team.</li>';
+					$output .=   '</ul>';
+				}
+			} else {
+				$output .=   '<ul class="errors">';
+				foreach ($errors as $error) {
+					$output .=   '<li class="error">';
+					$output .=   $error['error'];
+					$output .=   '</li>';
+				}
+				$output .=   '</ul>';
+			}
+		}
+
+		$output .= '<form method="post" id="create_website_form" class="create-site-form aione-form form" action="">';
+
+		if(SUBDOMAIN_INSTALL != 'true'){
+			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">'.DOMAIN_CURRENT_SITE.'/</label>';
+		}
+		$output .= '
+				<label class="create_website_form_label" for="create_website_form_site_url">Website URL<span class="gfield_required">*</span></label>
+				<input name="create_website_form_site_url" id="create_website_form_site_url" placeholder="yourwebsite" type="text" value="'.$website_url.'" class="create_website_form_input large" tabindex="51">
+			';
+		if(SUBDOMAIN_INSTALL == 'true'){
+			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">.'.DOMAIN_CURRENT_SITE.'</label>';
+		}
+
+		$output .= '
+				<label class="create_website_form_label" for="create_website_form_site_title">Website Title<span class="gfield_required">*</span></label>
+				<input name="create_website_form_site_title" id="create_website_form_site_title" type="text" placeholder="Your Website Title" value="'.$title.'" class="create_website_form_input large" tabindex="52">
+		';
+			
+		if ( !is_user_logged_in() ){
+			$output .= '
+				<label class="create_website_form_label" for="create_website_form_site_email">Email<span class="gfield_required">*</span></label>
+				<input name="create_website_form_site_email" id="create_website_form_site_email" placeholder="your email" type="text" value="'.$user_email.'" class="create_website_form_input large" tabindex="51">
+
+				<label class="create_website_form_label" for="create_website_form_site_password">Password<span class="gfield_required">*</span></label>
+				<input name="create_website_form_site_password" id="create_website_form_site_password" placeholder="your password" type="password" value="" class="create_website_form_input large" tabindex="51">
+			';			
+		}
+		if (class_exists('Captcha'))  {	
+			$word = $captcha_instance->generate_random_word();
+			$prefix = mt_rand();
+			$image_name = $captcha_instance->generate_image( $prefix, $word );
+			$captcha_image_url =  $upload_dir['baseurl'].'/captcha/'.$image_name;
+				
+			$output .= '
+					<label class="create_website_form_label" for="create_website_form_captcha_value">Captcha<span class="gfield_required">*</span></label>
+					<div class="create_website_form_captcha_image">
+					<img src="'.$captcha_image_url.'" />
+					</div> 
+					<input name="captcha_value" id="create_website_form_captcha_value" type="text" placeholder="Enter Captcha Here" value="" class="create_website_form_input large" tabindex="53">
+					<input name="captcha_prefix" type="hidden" value="'.$prefix.'" >
+					<div class="aione-clearfix"></div> 
+				';
+		}
+		$output .= '
+			<input name="action" type="hidden" value="create_site" >
+			<input type="submit" id="create_website_form_submit" class="create_website_form_submit aione-button button-large button-round button-flat" value="Create Site" tabindex="54" onclick="">
 		</form>';
 	
 		
