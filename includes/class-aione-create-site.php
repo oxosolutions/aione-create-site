@@ -368,31 +368,38 @@ class Aione_Create_Site {
 		}
 
 		$output .= '<form method="post" id="create_website_form" class="create-site-form aione-form form" action="">';
+		$output .= '<div class="field">';
 
 		if(SUBDOMAIN_INSTALL != 'true'){
 			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">'.DOMAIN_CURRENT_SITE.'/</label>';
 		}
 		$output .= '
-				<label class="create_website_form_label" for="create_website_form_site_url">Website URL<span class="gfield_required">*</span></label>
-				<input name="create_website_form_site_url" id="create_website_form_site_url" placeholder="yourwebsite" type="text" value="'.$website_url.'" class="create_website_form_input large" tabindex="51">
+				<label class="create_website_form_label" for="create_website_form_site_url">Website URL<span class="red">*</span></label>
+				<input name="create_website_form_site_url" id="create_website_form_site_url" placeholder="yourwebsite" type="text" value="'.$website_url.'" class="create_website_form_input large" tabindex="51"  data-validation="required custom length" data-validation-length="min4" data-validation-regexp="^([a-z0-9]+)$">
 			';
 		if(SUBDOMAIN_INSTALL == 'true'){
 			$output .= '<label id="create_website_form_site_url_suffix" for="create_website_form_site_url">.'.DOMAIN_CURRENT_SITE.'</label>';
 		}
+		$output .= '</div>';
 
+		$output .= '<div class="field">';
 		$output .= '
-				<label class="create_website_form_label" for="create_website_form_site_title">Website Title<span class="gfield_required">*</span></label>
-				<input name="create_website_form_site_title" id="create_website_form_site_title" type="text" placeholder="Your Website Title" value="'.$title.'" class="create_website_form_input large" tabindex="52">
+				<label class="create_website_form_label" for="create_website_form_site_title">Website Title<span class="red">*</span></label>
+				<input name="create_website_form_site_title" id="create_website_form_site_title" type="text" placeholder="Your Website Title" value="'.$title.'" class="create_website_form_input large" tabindex="52"  data-validation="required">
 		';
+		$output .= '</div>';
+		
 			
 		if ( !is_user_logged_in() ){
+			$output .= '<div class="field">';
 			$output .= '
-				<label class="create_website_form_label" for="create_website_form_site_email">Email<span class="gfield_required">*</span></label>
-				<input name="create_website_form_site_email" id="create_website_form_site_email" placeholder="your email" type="text" value="'.$user_email.'" class="create_website_form_input large" tabindex="51">
+				<label class="create_website_form_label" for="create_website_form_site_email">Email<span class="red">*</span></label>
+				<input name="create_website_form_site_email" id="create_website_form_site_email" placeholder="your email" type="text" value="'.$user_email.'" class="create_website_form_input large" tabindex="51"  data-validation="required">
 
-				<label class="create_website_form_label" for="create_website_form_site_password">Password<span class="gfield_required">*</span></label>
-				<input name="create_website_form_site_password" id="create_website_form_site_password" placeholder="your password" type="password" value="" class="create_website_form_input large" tabindex="51">
+				<label class="create_website_form_label" for="create_website_form_site_password">Password<span class="red">*</span></label>
+				<input name="create_website_form_site_password" id="create_website_form_site_password" placeholder="your password" type="password" value="" class="create_website_form_input large" tabindex="51"  data-validation="required">
 			';			
+			$output .= '</div>';
 		}
 		if (class_exists('Captcha'))  {	
 			$word = $captcha_instance->generate_random_word();
@@ -400,19 +407,21 @@ class Aione_Create_Site {
 			$image_name = $captcha_instance->generate_image( $prefix, $word );
 			$captcha_image_url =  $upload_dir['baseurl'].'/captcha/'.$image_name;
 				
+			$output .= '<div class="field create-website-form-captcha-field">';
 			$output .= '
-					<label class="create_website_form_label" for="create_website_form_captcha_value">Captcha<span class="gfield_required">*</span></label>
+					<label class="create_website_form_label" for="create_website_form_captcha_value">Captcha<span class="red">*</span></label>
 					<div class="create_website_form_captcha_image">
 					<img src="'.$captcha_image_url.'" />
 					</div> 
-					<input name="captcha_value" id="create_website_form_captcha_value" type="text" placeholder="Enter Captcha Here" value="" class="create_website_form_input large" tabindex="53">
+					<input name="captcha_value" id="create_website_form_captcha_value" type="text" placeholder="Enter Captcha Here" value="" class="create_website_form_input large" tabindex="53"  data-validation="required length" data-validation-length="min4">
 					<input name="captcha_prefix" type="hidden" value="'.$prefix.'" >
-					<div class="aione-clearfix"></div> 
+					<div class="aione-clear clear"></div> 
 				';
+			$output .= '</div>'; 
 		}
 		$output .= '
 			<input name="action" type="hidden" value="create_site" >
-			<input type="submit" id="create_website_form_submit" class="create_website_form_submit aione-button button-large button-round button-flat" value="Create Site" tabindex="54" onclick="">
+			<input type="submit" id="create_website_form_submit" class="create_website_form_submit aione-button medium circle fullwidth primary-bg-color" value="Create Site" tabindex="54" onclick="">
 		</form>';
 	
 		
