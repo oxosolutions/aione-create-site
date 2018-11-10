@@ -6,7 +6,7 @@
  * Plugin Name:       Aione Create Site
  * Plugin URI:        https://oxosolutions.com/products/wordpress-plugins/aione-create-site
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.3.0.4
+ * Version:           1.3.0.5
  * Author:            OXO Solutions®
  * Author URI:        https://oxosolutions.com/
  * License:           GPL-3.0+

@@ -424,13 +424,11 @@ class Aione_Create_Site {
 		
 		return $output;
 	}
-	
-
 
 	public function aione_blog_templates_shortcode (){
 		$settings = nbt_get_settings();
 		$templates = $settings['templates'];
-		$create_page_url = home_url();
+		$create_page_url = home_url().'/create';
 		
 		$output = "";
 		$output .= '<div class="aione-blog-templates">';
@@ -442,10 +440,15 @@ class Aione_Create_Site {
 			
 			$template_title = $template['name'];
 			$template_description = $template['description'];
+			$template_class = '';
+
+			if( $template['is_default'] ){
+				$template_class = 'active';
+			}
 			
-			$output .= '<div class="aione-blog-template">';
+			$output .= '<div class="aione-blog-template '.$template_class.'">';
 				$output .= '<div class="aione-blog-template-image">';
-					$output .= '<img src="'.$screenshot_url.'" alt=""/>';
+					$output .= '<img src="'.$screenshot_url.'" alt="Template '.$template_title.'"/>';
 				$output .= "</div>";
 				
 				$output .= '<div class="aione-blog-template-details">';
@@ -456,21 +459,149 @@ class Aione_Create_Site {
 					$output .= "</div>";
 					
 					$output .= '<div class="aione-blog-template-actions">';
-						$output .= '<a class="aione-blog-template-action action-demo" href="'.$demo_url.'" target="_blank">Demo</a>';
-						$output .= '<a class="aione-blog-template-action action-create" href="'.$create_site_url.'">Create Site</a>';
+						$output .= '<a class="aione-blog-template-action action-demo" href="'.$demo_url.'" target="_blank" data-hover="View Demo">View Demo</a>';
+						$output .= '<a class="aione-blog-template-action action-create" href="'.$create_site_url.'" data-hover="Create Site" title="Create new website using this template">Create Site</a>';
 					$output .= "</div>";
 				$output .= "</div>";
 
 			$output .= "</div>";
 		}
 		
-		$output .= "<style>
-		
-		
-		</style>";
+		$output .= '<style>
+			.aione-blog-templates{
+			}
+			.aione-blog-templates:after{
+			content:"";
+			display:table;
+			clear:both;
+			}
+			.aione-blog-template{
+			float: left;
+			width: 23.875%;
+			margin: 0 1.5% 1.5% 0;
+			}
+			.aione-blog-template:nth-child(4n){
+			margin-right:0;
+			}
+
+			.aione-blog-template-image{
+			padding: 10px;
+			height: 200px;
+			overflow: hidden;
+			border: 1px solid #e8e8e8;
+			background-color:#ffffff;
+			-webkit-transition: all 250ms ease-in-out;
+			-moz-transition: all 250ms ease-in-out;
+			transition: all 250ms ease-in-out;
+			}
+			.aione-blog-template-image:hover{
+			background-color:#595959;
+			}
+			.aione-blog-template-image img{
+
+			}
+			.aione-blog-template-info{
+			background-color: #f2f2f2;
+			padding: 4px 10px;
+
+			}
+			.aione-blog-template-title{
+			margin: 0;
+			padding: 0;
+			font-size: 20px;
+			line-height: 30px;
+			color: #363636;
+			white-space: nowrap;
+			text-align:center;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			}
+			.aione-blog-template-info .aione-blog-template-description{
+			text-align:center;
+			margin-bottom: 0;
+			font-size: 16px;
+			line-height: 20px;
+			color: #595959;
+			}
+			.aione-blog-template-actions{
+			margin-top: 10px;
+			}
+			.aione-blog-template-actions:after{
+			content:"";
+			display:table;
+			clear:both;
+			}
+			.aione-blog-template-action{
+			width: 48%;
+			padding: 0;
+			margin: 0 2% 0 0;
+			font-size: 16px;
+			display: block;
+			text-align: center;
+			line-height: 32px;
+			font-weight: normal;
+			overflow: hidden;
+			box-sizing: border-box;
+			border-radius: 0;
+			position: relative;
+
+			-webkit-transition: all 250ms ease-in-out;
+			-moz-transition: all 250ms ease-in-out;
+			transition: all 250ms ease-in-out;
+			}
+
+			.aione-blog-template-action:before {
+			content: attr(data-hover);
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			color: #595959;
+			position: absolute;
+			text-align: center;
+			background-color: #ffffff;
+			-webkit-transform: translateX(-100%);
+			-moz-transform: translateX(-100%);
+			transform: translateX(-100%);
+			-webkit-transition: all 250ms ease-in-out;
+			-moz-transition: all 250ms ease-in-out;
+			transition: all 250ms ease-in-out;
+			}
+			.aione-blog-template-action:hover:before {
+			-webkit-transform: translateX(0%);
+			-moz-transform: translateX(0%);
+			transform: translateX(0%);
+			}
+			.aione-blog-template-actions .aione-blog-template-action.action-demo{
+			float:left;
+			color:#595959;
+			background-color:#f2f2f2;
+			border: 1px solid #e8e8e8;
+			}
+			.aione-blog-template-actions .aione-blog-template-action.action-demo:hover{
+			color: #595959;
+			}
+			.aione-blog-template-actions .aione-blog-template-action.action-demo:before{
+			color: #ffffff;
+			background-color:#595959;
+			border: 1px solid #595959;
+			}
+			.aione-blog-template-actions .aione-blog-template-action.action-create{
+			float:right;
+			margin-right:0;
+			color:#ffffff;
+			background-color:#168dc5;
+			border: 1px solid #168dc5;
+			}
+			.aione-blog-template-actions .aione-blog-template-action.action-create:hover{
+			color: #ffffff;
+			}
+			.aione-blog-template-actions .aione-blog-template-action.action-create:before{
+			color: #168dc5;
+			}
+		</style';
 		$output .= "</div>";
 
 		return $output;
 	}
-
 }
